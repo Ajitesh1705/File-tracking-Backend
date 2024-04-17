@@ -10,7 +10,7 @@ const routes = express.Router();
 
 routes.post('/login', userLoginValidate, loginUser);
 
-routes.get('/users', ensureAuthenticated, getUsers);
+routes.get('/users', getUsers);
 
 
 module.exports = routes;

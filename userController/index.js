@@ -31,14 +31,14 @@ module.exports = {
                 .json({message: 'Auth failed, Invalid username/password'});
         }
 
-        const isPassEqual = await bcrypt.compare(req.body.password, user.password);
-        if(!isPassEqual){
-            return res.status(401)
-                .json({message: 'Auth failed, Invalid username/password'});
-        }
+        // const isPassEqual = await bcrypt.compare(req.body.password, user.password);
+        // if(!isPassEqual){
+        //     return res.status(401)
+        //         .json({message: 'Auth failed, Invalid username/password'});
+        // }
         const tokenObject = {
             _id: user._id,
-            fullName: user.fullName,
+            department: user.department,
             email: user.email
         }
         const jwtToken = jwt.sign(tokenObject, process.env.SECRET, {expiresIn: '4h'});
