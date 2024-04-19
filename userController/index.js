@@ -1,7 +1,10 @@
 const UserModel = require("../models/UserModel");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
+const FileTrackModel = require("../models/FileTrack")
+
 module.exports = {
+
     // validate req.body - Done
     // create MongoDB UserModel - Done
     // do password encrytion - Done
@@ -58,5 +61,19 @@ module.exports = {
             return res.status(500)
                 .json({message:'error', err});
         } 
+    },
+    registerFile: async (req, res) => {
+        try {
+            const { fileName, fromDepartment, toDepartment, uniqueId } = req.body;
+            const fileTransfer = new FileTrackModel({ fileName, fromDepartment, toDepartment, uniqueId });
+            const savedRegistration = await fileTransfer.save();
+            return res.status(201).json({ message: 'File details registered successfully', data: savedRegistration });
+        } catch (error) {
+            return res.status(500).json({ message: 'Error registering file details', error });
+        }
     }
+    
+
+    
+
 }
