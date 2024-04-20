@@ -2,6 +2,7 @@
 const Joi = require('joi');
 const jwt = require('jsonwebtoken');
 
+
 const userRegisterValidate = (req, res, next)=>{
     const schema = Joi.object({
         fullName: Joi.string().min(3).max(100).required(),
@@ -42,14 +43,25 @@ const fileRegistrationValidate = (req, res, next) => {
     next();
 }
 const verifyToken = (req, res, next) => {
+    
     const token = req.headers.authorization;
-    if (!token) return res.status(401).json({ message: 'No token provided' });
 
-    jwt.verify(token, process.env.SECRET, (err, decoded) => {
-        if (err) return res.status(403).json({ message: 'Failed to authenticate token' });
-        req.userId = decoded._id; // Attach user ID to the request object
+    //  token exists
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.SECRET);
+
+        req.user = decoded;
+
         next();
-    });
+    } catch (error) {
+        
+        console.error('Error verifying token:', error.message);
+        return res.status(403).json({ message: 'Failed to authenticate token' });
+    }
 };
 
 
