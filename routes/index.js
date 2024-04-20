@@ -12,9 +12,9 @@ routes.post('/login', userLoginValidate, loginUser);
 
 routes.get('/users', getUsers);
 
-routes.post('/registerfile', validateTransferredBy, registerFile);
+routes.post('/registerfile',  registerFile);
 
 routes.get('/getname', getFileNamesAndIds);
 
 
-module.exports = routes;
+module.exports = routes
