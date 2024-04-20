@@ -65,14 +65,22 @@ module.exports = {
     registerFile: async (req, res) => {
         try {
             const { fileName, fromDepartment, toDepartment, uniqueId } = req.body;
+            const transferredBy = req.user._id;
             const fileTransfer = new FileTrackModel({ fileName, fromDepartment, toDepartment, uniqueId });
             const savedRegistration = await fileTransfer.save();
             return res.status(201).json({ message: 'File details registered successfully', data: savedRegistration });
         } catch (error) {
             return res.status(500).json({ message: 'Error registering file details', error });
         }
+    },
+    getFileNamesAndIds: async (req, res) => {
+        try {
+            const files = await FileTrackModel.find({}, 'fileName uniqueId'); // Fetch fileName and uniqueId fields only
+            return res.status(200).json({ data: files });
+        } catch (error) {
+            return res.status(500).json({ message: 'Error fetching file names and IDs', error });
+        }
     }
-    
 
     
 

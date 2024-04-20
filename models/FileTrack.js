@@ -20,10 +20,16 @@ const fileTransferSchema = new Schema({
     type: String,
     required: true
     },
+    transferredBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'UserModel', 
+        required: true
+    },
     transferDate: {
         type: Date,
         default: Date.now
     }
+
 });
 
 const FileTransferModel = mongoose.model('FileTransfer', fileTransferSchema);
