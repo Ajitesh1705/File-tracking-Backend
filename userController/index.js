@@ -44,7 +44,7 @@ module.exports = {
             department: user.department,
             email: user.email
         }
-        const jwtToken = jwt.sign(tokenObject, process.env.SECRET, {expiresIn: '4h'});
+        const jwtToken = jwt.sign(tokenObject, 'my-secret-key', {expiresIn: '4h'});
         return res.status(200)
             .json({jwtToken, tokenObject});
        }catch(err){

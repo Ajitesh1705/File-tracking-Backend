@@ -7,7 +7,10 @@ const ensureAuthenticated = (req, res, next)=>{
             .json({message: 'Token is required'});
     }
     try{
-        const decoded = jwt.verify(req.headers['authorization'], process.env.SECRET);
+        console.log(req.headers['authorization'])
+        const decoded = jwt.verify(req.headers['authorization'].substring(7), 'my-secret-key')
+        console.log(decoded)
+        
         return next();
     }catch(err){
         return res.status(403)

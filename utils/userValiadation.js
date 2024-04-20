@@ -52,9 +52,13 @@ const verifyToken = (req, res, next) => {
     }
 
     try {
+        console.log(token)
         const decoded = jwt.verify(token, process.env.SECRET);
 
         req.user = decoded;
+
+        
+        console.log(decoded)
 
         next();
     } catch (error) {
