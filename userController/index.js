@@ -64,25 +64,13 @@ module.exports = {
     },
     registerFile: async (req, res) => {
         try {
+            // Your existing code for registering file transfer
             const { fileName, fromDepartment, toDepartment, uniqueId } = req.body;
-            
-        
-            const tokenObject = {
-                fileName,
-                fromDepartment,
-                toDepartment,
-                uniqueId,
-                
-            };
-    
-            // Generate JWT token
-            const jwtToken = jwt.sign(tokenObject, process.env.SECRET, { expiresIn: '4h' });
-    
-            // Save file details along with JWT token to the database
-            const fileTransfer = new FileTrackModel({ fileName, fromDepartment, toDepartment, uniqueId, jwtToken });
+             // Get the authenticated user's ID from req.user
+
+            const fileTransfer = new FileTrackModel({ fileName, fromDepartment, toDepartment, uniqueId, });
             const savedRegistration = await fileTransfer.save();
-    
-            return res.status(201).json({ message: 'File details registered successfully', data: savedRegistration, jwtToken });
+            return res.status(201).json({ message: 'File details registered successfully', data: savedRegistration });
         } catch (error) {
             return res.status(500).json({ message: 'Error registering file details', error });
         }

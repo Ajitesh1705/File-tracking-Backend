@@ -1,5 +1,6 @@
 
 const Joi = require('joi');
+const jwt = require('jsonwebtoken');
 
 const userRegisterValidate = (req, res, next)=>{
     const schema = Joi.object({
@@ -40,28 +41,21 @@ const fileRegistrationValidate = (req, res, next) => {
     }
     next();
 }
-const validateTransferredBy = async (req, res, next) => {
-    try {
-        const transferredById = req.user._id; // Get the transferredBy ID from the authenticated user
-        if (!mongoose.Types.ObjectId.isValid(transferredById)) {
-            return res.status(400).json({ message: 'Invalid transferredBy ID' });
-        }
+const verifyToken = (req, res, next) => {
+    const token = req.headers.authorization;
+    if (!token) return res.status(401).json({ message: 'No token provided' });
 
-        const user = await UserModel.findById(transferredById);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        // If everything is valid, proceed to the next middleware
+    jwt.verify(token, process.env.SECRET, (err, decoded) => {
+        if (err) return res.status(403).json({ message: 'Failed to authenticate token' });
+        req.userId = decoded._id; // Attach user ID to the request object
         next();
-    } catch (error) {
-        return res.status(500).json({ message: 'Error validating transferredBy ID', error });
-    }
-}
+    });
+};
+
 
 module.exports = {
     userRegisterValidate,
     userLoginValidate,
     fileRegistrationValidate,
-    validateTransferredBy
+    verifyToken
 }
