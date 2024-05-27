@@ -1,7 +1,10 @@
 
 const Joi = require('joi');
 const jwt = require('jsonwebtoken');
-
+require('dotenv').config();
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const multer = require('multer');
 
 const userRegisterValidate = (req, res, next)=>{
     const schema = Joi.object({
@@ -67,11 +70,28 @@ const verifyToken = (req, res, next) => {
         return res.status(403).json({ message: 'Failed to authenticate token' });
     }
 };
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'file_transfers',
+        format: async (req, file) => 'pdf', // Supports promises as well
+        public_id: (req, file) => file.originalname,
+    },
+});
+
+const upload = multer({ storage: storage }).single('file');
 
 
 module.exports = {
     userRegisterValidate,
     userLoginValidate,
     fileRegistrationValidate,
-    verifyToken
+    verifyToken,
+    upload
 }

@@ -65,10 +65,10 @@ module.exports = {
     registerFile: async (req, res) => {
         try {
             // Your existing code for registering file transfer
-            const { fileName, fromDepartment, toDepartment, uniqueId } = req.body;
-             // Get the authenticated user's ID from req.user
+            const { fileName, CurrDept, Department, uniqueId } = req.body;
+            const fileUrl = req.file.path;
 
-            const fileTransfer = new FileTrackModel({ fileName, fromDepartment, toDepartment, uniqueId, });
+            const fileTransfer = new FileTrackModel({ fileName, CurrDept, Department, uniqueId,fileUrl, });
             const savedRegistration = await fileTransfer.save();
             return res.status(201).json({ message: 'File details registered successfully', data: savedRegistration });
         } catch (error) {
