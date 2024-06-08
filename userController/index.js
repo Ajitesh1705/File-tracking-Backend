@@ -64,25 +64,67 @@ module.exports = {
     },
     registerFile: async (req, res) => {
         try {
-            // Your existing code for registering file transfer
-            const { fileName, CurrDept, Department, uniqueId } = req.body;
+            
+            const { fileName, CurrDept, Department, uniqueId, comment } = req.body;
             const fileUrl = req.file.path;
-
-            const fileTransfer = new FileTrackModel({ fileName, CurrDept, Department, uniqueId,fileUrl, });
+            const newComment = {
+                CurrDept: CurrDept,
+                comment: comment,
+                fileUrl: fileUrl,
+            };
+            const fileTransfer = new FileTrackModel({ fileName, CurrDept, Department, uniqueId,fileUrl, comments: [newComment],});
             const savedRegistration = await fileTransfer.save();
             return res.status(201).json({ message: 'File details registered successfully', data: savedRegistration });
         } catch (error) {
             return res.status(500).json({ message: 'Error registering file details', error });
         }
     },
+    updateFileStatus: async (req, res) => {
+        try {
+            const { fileId, CurrDept, Department, comment } = req.body;
+            const fileUrl = req.file.path;
+
+            const newComment = {
+                CurrDept,
+                comment,
+                fileUrl
+            };
+
+            const file = await FileTrackModel.findById(fileId);
+            if (!file) {
+                return res.status(404).json({ message: 'File not found' });
+            }
+
+            file.CurrDept = Department; // Update current department
+            file.Department = Department; // Update department to be transferred to
+            file.comments.push(newComment); // Add new comment
+
+            const updatedFile = await file.save();
+            return res.status(200).json({ message: 'File status updated successfully', data: updatedFile });
+        } catch (error) {
+            return res.status(500).json({ message: 'Error updating file status', error });
+            console.log(error)
+        }
+    },
     getFileNamesAndIds: async (req, res) => {
         try {
-            const files = await FileTrackModel.find({}, 'fileName uniqueId'); // Fetch fileName and uniqueId fields only
+            const files = await FileTrackModel.find({}, 'fileName comment'); // Fetch fileName and uniqueId fields only
             return res.status(200).json({ data: files });
         } catch (error) {
             return res.status(500).json({ message: 'Error fetching file names and IDs', error });
         }
-    }
+    },
+    getFilesByCurrDept: async (req, res) => {
+        try {
+            const { CurrDept } = req.params;
+
+            const files = await FileTrackModel.find({ CurrDept });
+
+            return res.status(200).json({ data: files });
+        } catch (error) {
+            return res.status(500).json({ message: 'Error fetching files by current department', error });
+        }
+    },
 
     
 

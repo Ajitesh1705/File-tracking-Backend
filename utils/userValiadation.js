@@ -80,7 +80,7 @@ const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'file_transfers',
-        format: async (req, file) => 'pdf', // Supports promises as well
+        format: async (req, file) => 'pdf', 
         public_id: (req, file) => file.originalname,
     },
 });

@@ -1,6 +1,25 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const commentSchema = new Schema({
+    CurrDept: {
+        type: String,
+        required: true
+    },
+    comment: {
+        type: String,
+        required: true
+    },
+    fileUrl: {
+        type: String,
+        required: true
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now
+    }
+});
+
 const fileTransferSchema = new Schema({
     fileName: {
         type: String,
@@ -18,16 +37,14 @@ const fileTransferSchema = new Schema({
         type: String,
         required: true
     },
-    fileUrl: {
-        type: String,
-        required: true
-    },
     transferDate: {
         type: Date,
         default: Date.now
-    }
+    },
+    comments: [commentSchema] // Array of comments
 });
 
-const FileTransferModel = mongoose.model('FileTransfer', fileTransferSchema);
+const FileTrackModel = mongoose.model('FileTransfer', fileTransferSchema);
 
-module.exports = FileTransferModel;
+module.exports = FileTrackModel;
+
