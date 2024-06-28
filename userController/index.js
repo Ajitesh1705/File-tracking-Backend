@@ -79,34 +79,71 @@ module.exports = {
             return res.status(500).json({ message: 'Error registering file details', error });
         }
     },
+   
+
     updateFileStatus: async (req, res) => {
         try {
-            const { fileId, CurrDept, Department, comment } = req.body;
-            const fileUrl = req.file.path;
-
-            const newComment = {
-                CurrDept,
-                comment,
-                fileUrl
-            };
-
-            const file = await FileTrackModel.findById(fileId);
+            console.log('Request body:', req.body); // Log the entire request body
+    
+            const { uniqueId, comment } = req.body;
+            let fileUrl = req.body.fileUrl; // Declare fileUrl separately
+    
+            if (!uniqueId || !comment) {
+                return res.status(400).json({ message: 'uniqueId and comment are required' });
+            }
+    
+            const file = await FileTrackModel.findOne({ uniqueId });
+            console.log('Found file:', file);
+    
             if (!file) {
                 return res.status(404).json({ message: 'File not found' });
             }
+    
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'Pro President'];
+            const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
+    
+            if (currentDeptIndex === -1 || currentDeptIndex === departmentSequence.length - 1) {
+                return res.status(400).json({ message: 'Invalid department or file already at final department' });
+            }
+    
+            const nextDept = departmentSequence[currentDeptIndex + 1];
+    
+            
+            if (!fileUrl) {
+                fileUrl = file.fileUrl;
+            }
+    
+            const newComment = {
+                CurrDept: file.CurrDept,
+                comment,
+                fileUrl: fileUrl
+            };
+    
+            console.log('New comment:', newComment); 
 
-            file.CurrDept = Department; // Update current department
-            file.Department = Department; // Update department to be transferred to
-            file.comments.push(newComment); // Add new comment
+            const newTransition = {
+            FromDept: file.CurrDept,
+            ToDept: nextDept,
+            date: new Date(),
+            status: 'sent',
+           
+        };
+    
+    
+            file.CurrDept = nextDept;
+            file.Department = departmentSequence[currentDeptIndex + 2] ;
+            file.comments.push(newComment);
+            file.transitions.push(newTransition);
 
+    
             const updatedFile = await file.save();
             return res.status(200).json({ message: 'File status updated successfully', data: updatedFile });
         } catch (error) {
-            return res.status(500).json({ message: 'Error updating file status', error });
-            console.log(error)
+            console.error('Error updating file status:', error);
+            return res.status(500).json({ message: 'Error updating file status', error: error.message });
         }
     },
-    getFileNamesAndIds: async (req, res) => {
+     getFileNamesAndIds: async (req, res) => {
         try {
             const files = await FileTrackModel.find({}, 'fileName comment'); // Fetch fileName and uniqueId fields only
             return res.status(200).json({ data: files });
@@ -123,6 +160,74 @@ module.exports = {
             return res.status(200).json({ data: files });
         } catch (error) {
             return res.status(500).json({ message: 'Error fetching files by current department', error });
+        }
+    },
+    rework: async (req, res) => {
+        try {
+            const { uniqueId, comment,fileUrl } = req.body;
+            const file = await FileTrackModel.findOne({ uniqueId });
+            
+            if (!file) {
+                return res.status(404).json({ message: 'File not found' });
+            }
+    
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'Pro President'];
+            const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
+    
+            if (currentDeptIndex <= 0) {
+                return res.status(400).json({ message: 'File is already at the first department or invalid department' });
+            }
+    
+            const previousDept = departmentSequence[currentDeptIndex - 1];
+
+            if (!fileUrl) {
+                fileUrl = file.fileUrl;
+            }
+    
+            const newComment = {
+                CurrDept: file.CurrDept,
+                comment,
+                fileUrl: fileUrl 
+            };
+    
+            const newTransition = {
+                FromDept: file.CurrDept,
+                ToDept: previousDept,
+                status: 'rework'
+            };
+    
+            file.CurrDept = previousDept;
+            file.Department = departmentSequence[currentDeptIndex + 1];
+            file.comments.push(newComment);
+            file.transitions.push(newTransition);
+    
+            const updatedFile = await file.save();
+            return res.status(200).json({ message: 'File sent for rework successfully', data: updatedFile });
+        } catch (error) {
+            console.error('Error sending file for rework:', error);
+            return res.status(500).json({ message: 'Error sending file for rework', error });
+        }
+    },
+     getFileTimeline : async (req, res) => {
+        try {
+            const { uniqueId } = req.params;
+            const file = await FileTrackModel.findOne({ uniqueId });
+    
+            if (!file) {
+                return res.status(404).json({ message: 'File not found' });
+            }
+    
+            const timeline = file.transitions.map(transition => ({
+                from: transition.FromDept,
+                to: transition.ToDept,
+                date: transition.date.toLocaleDateString('en-IN'),
+                status: transition.status
+            }));
+    
+            return res.status(200).json({ message: 'File timeline retrieved successfully', timeline });
+        } catch (error) {
+            console.error('Error fetching file timeline: ', error);
+            return res.status(500).json({ message: 'Error fetching file timeline', error });
         }
     },
 

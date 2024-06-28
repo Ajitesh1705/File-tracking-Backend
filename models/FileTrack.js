@@ -20,6 +20,25 @@ const commentSchema = new Schema({
     }
 });
 
+const transitionSchema = new Schema({
+    FromDept: {
+        type: String,
+        required: true
+    },
+    ToDept: {
+        type: String,
+        required: true
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    },
+    status: {
+        type: String,
+        enum: ['sent', 'received', 'rework'],
+        default: 'sent'
+    }
+});
 const fileTransferSchema = new Schema({
     fileName: {
         type: String,
@@ -41,7 +60,8 @@ const fileTransferSchema = new Schema({
         type: Date,
         default: Date.now
     },
-    comments: [commentSchema] // Array of comments
+    comments: [commentSchema], // Array of comments
+    transitions: [transitionSchema]
 });
 
 const FileTrackModel = mongoose.model('FileTransfer', fileTransferSchema);
