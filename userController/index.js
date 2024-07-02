@@ -145,7 +145,7 @@ module.exports = {
     },
      getFileNamesAndIds: async (req, res) => {
         try {
-            const files = await FileTrackModel.find({}, 'fileName comment'); // Fetch fileName and uniqueId fields only
+            const files = await FileTrackModel.find({}); // Fetch fileName and uniqueId fields only
             return res.status(200).json({ data: files });
         } catch (error) {
             return res.status(500).json({ message: 'Error fetching file names and IDs', error });
@@ -230,6 +230,39 @@ module.exports = {
             return res.status(500).json({ message: 'Error fetching file timeline', error });
         }
     },
+   getFilesSentFromDepartment : async (req, res) => {
+     const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'Pro President'];
+
+    const getNextDepartment = (currentDepartment) => {
+        const currentIndex = departmentSequence.indexOf(currentDepartment);
+        if (currentIndex === -1 || currentIndex === departmentSequence.length - 1) {
+            return null;
+        }
+        return departmentSequence[currentIndex + 1];
+    };
+
+        try {
+            const { department } = req.params;
+            const nextDepartment = getNextDepartment(department);
+    
+            if (!nextDepartment) {
+                return res.status(400).json({ message: 'Invalid department or no next department in sequence' });
+            }
+    
+            const files = await FileTrackModel.find({ CurrDept: nextDepartment });
+    
+            if (!files.length) {
+                return res.status(404).json({ message: `No files found sent from department: ${department}` });
+            }
+    
+            return res.status(200).json({ message: 'Files retrieved successfully', data: files });
+        } catch (error) {
+            return res.status(500).json({ message: 'Error retrieving files sent from department', error });
+        }
+    }
+    
+  
+    
 
     
 
