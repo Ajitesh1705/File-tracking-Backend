@@ -17,13 +17,13 @@ routes.post('/registerfile', ensureAuthenticated, upload,registerFile);
 
 routes.get('/getname', getFileNamesAndIds);
 
-routes.get('/files/:CurrDept', verifyToken, getFilesByCurrDept);
+routes.get('/files/:CurrDept', getFilesByCurrDept);
 
-routes.post("/reworkfile" ,verifyToken, rework)
+routes.post("/reworkfile" ,rework)
 
-routes.put('/updatefilestatus', verifyToken, upload, updateFileStatus);
+routes.put('/updatefilestatus', upload, updateFileStatus);
 
-routes.get('/filetimeline/:uniqueId' , verifyToken, getFileTimeline)
+routes.get('/filetimeline/:uniqueId' , getFileTimeline)
 
 routes.get('/sent-files/:department', ensureAuthenticated, getFilesSentFromDepartment);
 
