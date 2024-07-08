@@ -99,7 +99,7 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'Pro President'];
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'ProPresident'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
             if (currentDeptIndex === -1 || currentDeptIndex === departmentSequence.length - 1) {
@@ -171,7 +171,7 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'Pro President'];
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'ProPresident'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
             if (currentDeptIndex <= 0) {

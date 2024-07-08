@@ -40,10 +40,6 @@ const transitionSchema = new Schema({
     }
 });
 const fileTransferSchema = new Schema({
-    fileName: {
-        type: String,
-        required: true
-    },
     CurrDept: {
         type: String,
         required: true
@@ -60,7 +56,7 @@ const fileTransferSchema = new Schema({
         type: Date,
         default: Date.now
     },
-    comments: [commentSchema], // Array of comments
+    comments: [commentSchema], 
     transitions: [transitionSchema]
 });
 
