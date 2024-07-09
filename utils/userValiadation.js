@@ -88,7 +88,7 @@ const storage = new CloudinaryStorage({
     },
 });
 
-const upload = multer({ storage: storage }).single('file');
+
 
 
 module.exports = {
@@ -96,5 +96,5 @@ module.exports = {
     userLoginValidate,
     fileRegistrationValidate,
     verifyToken,
-    upload
+
 }
