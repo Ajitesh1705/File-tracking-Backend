@@ -64,23 +64,14 @@ module.exports = {
     },
     registerFile: async (req, res) => {
         try {
-            const { fileName, CurrDept, Department, uniqueId, comment, fileUrl } = req.body;
-    
+            
+            const { fileName, CurrDept, Department, uniqueId, comment,fileUrl } = req.body;;
             const newComment = {
                 CurrDept: CurrDept,
                 comment: comment,
                 fileUrl: fileUrl,
             };
-    
-            const fileTransfer = new FileTrackModel({
-                fileName,
-                CurrDept,
-                Department,
-                uniqueId,
-                fileUrl,
-                comments: [newComment],
-            });
-    
+            const fileTransfer = new FileTrackModel({ fileName, CurrDept, Department, uniqueId,fileUrl, comments: [newComment],});
             const savedRegistration = await fileTransfer.save();
             return res.status(201).json({ message: 'File details registered successfully', data: savedRegistration });
         } catch (error) {
@@ -107,7 +98,7 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'ProPresident'];
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar',  'ProPresident', 'President'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
             if (currentDeptIndex === -1 || currentDeptIndex === departmentSequence.length - 1) {
@@ -116,7 +107,7 @@ module.exports = {
     
             const nextDept = departmentSequence[currentDeptIndex + 1];
     
-            
+            // If fileUrl is not provided in the request, use the existing one
             if (!fileUrl) {
                 fileUrl = file.fileUrl;
             }
@@ -128,23 +119,29 @@ module.exports = {
             };
     
             console.log('New comment:', newComment); 
-
+    
             const newTransition = {
-            FromDept: file.CurrDept,
-            ToDept: nextDept,
-            date: new Date(),
-            status: 'sent',
-           
-        };
+                FromDept: file.CurrDept,
+                ToDept: nextDept,
+                date: new Date(),
+                status: 'sent',
+            };
     
+            const updatedFile = await FileTrackModel.findOneAndUpdate(
+                { uniqueId },
+                {
+                    $set: {
+                        CurrDept: nextDept,
+                        Department: departmentSequence[currentDeptIndex + 2] // If you want to set to the department after the next one
+                    },
+                    $addToSet: {
+                        comments: newComment,
+                        transitions: newTransition
+                    }
+                },
+                { new: true } // Return the updated document
+            );
     
-            file.CurrDept = nextDept;
-            file.Department = departmentSequence[currentDeptIndex + 2] ;
-            file.comments.push(newComment);
-            file.transitions.push(newTransition);
-
-    
-            const updatedFile = await file.save();
             return res.status(200).json({ message: 'File status updated successfully', data: updatedFile });
         } catch (error) {
             console.error('Error updating file status:', error);
@@ -172,14 +169,14 @@ module.exports = {
     },
     rework: async (req, res) => {
         try {
-            const { uniqueId, comment,fileUrl } = req.body;
+            const { uniqueId, comment } = req.body;
             const file = await FileTrackModel.findOne({ uniqueId });
             
             if (!file) {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'ProPresident'];
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar' ,'ProPresident', 'President',];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
             if (currentDeptIndex <= 0) {
@@ -187,33 +184,41 @@ module.exports = {
             }
     
             const previousDept = departmentSequence[currentDeptIndex - 1];
-
-            if (!fileUrl) {
-                fileUrl = file.fileUrl;
-            }
+            const fileUrl = file.comments.map(comment => comment.fileUrl).pop() || file.fileUrl;
     
             const newComment = {
                 CurrDept: file.CurrDept,
                 comment,
-                fileUrl: fileUrl 
+                fileUrl
             };
     
             const newTransition = {
                 FromDept: file.CurrDept,
                 ToDept: previousDept,
+                date: new Date(),
                 status: 'rework'
             };
     
-            file.CurrDept = previousDept;
-            file.Department = departmentSequence[currentDeptIndex + 1];
-            file.comments.push(newComment);
-            file.transitions.push(newTransition);
+            // Update the file with the new department, comment, and transition
+            const updatedFile = await FileTrackModel.findOneAndUpdate(
+                { uniqueId },
+                {
+                    $set: {
+                        CurrDept: previousDept,
+                        Department: previousDept
+                    },
+                    $addToSet: {
+                        comments: newComment,
+                        transitions: newTransition
+                    }
+                },
+                { new: true }
+            );
     
-            const updatedFile = await file.save();
             return res.status(200).json({ message: 'File sent for rework successfully', data: updatedFile });
         } catch (error) {
             console.error('Error sending file for rework:', error);
-            return res.status(500).json({ message: 'Error sending file for rework', error });
+            return res.status(500).json({ message: 'Error sending file for rework', error: error.message });
         }
     },
      getFileTimeline : async (req, res) => {
@@ -239,7 +244,7 @@ module.exports = {
         }
     },
    getFilesSentFromDepartment : async (req, res) => {
-     const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'Pro President'];
+     const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'Pro President', 'President'];
 
     const getNextDepartment = (currentDepartment) => {
         const currentIndex = departmentSequence.indexOf(currentDepartment);

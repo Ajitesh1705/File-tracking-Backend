@@ -21,7 +21,7 @@ routes.get('/files/:CurrDept', getFilesByCurrDept);
 
 routes.post("/reworkfile" ,rework)
 
-routes.put('/updatefilestatus',  updateFileStatus);
+routes.post('/updatefilestatus',  updateFileStatus);
 
 routes.get('/filetimeline/:uniqueId' , getFileTimeline)
 
