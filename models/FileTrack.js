@@ -44,6 +44,18 @@ const fileTransferSchema = new Schema({
         type: String,
         required: true
     },
+    fileDescription: {
+        type: String,
+        required: true
+    },
+    cost: {
+        type: Number,
+        required: true
+    },
+    ForDepartment: {
+        type: String,
+        required: true
+    },
     Department: {
         type: String,
         required: true

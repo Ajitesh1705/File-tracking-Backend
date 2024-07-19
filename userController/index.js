@@ -65,13 +65,13 @@ module.exports = {
     registerFile: async (req, res) => {
         try {
             
-            const { fileName, CurrDept, Department, uniqueId, comment,fileUrl } = req.body;;
+            const { fileName, CurrDept, fileDescription, cost, ForDepartment, Department, uniqueId, comment,fileUrl } = req.body;;
             const newComment = {
                 CurrDept: CurrDept,
                 comment: comment,
                 fileUrl: fileUrl,
             };
-            const fileTransfer = new FileTrackModel({ fileName, CurrDept, Department, uniqueId,fileUrl, comments: [newComment],});
+            const fileTransfer = new FileTrackModel({ fileName, CurrDept, fileDescription, cost, ForDepartment,Department, uniqueId,fileUrl, comments: [newComment],});
             const savedRegistration = await fileTransfer.save();
             return res.status(201).json({ message: 'File details registered successfully', data: savedRegistration });
         } catch (error) {
@@ -82,32 +82,29 @@ module.exports = {
 
     updateFileStatus: async (req, res) => {
         try {
-            console.log('Request body:', req.body); // Log the entire request body
-    
             const { uniqueId, comment } = req.body;
-            let fileUrl = req.body.fileUrl; // Declare fileUrl separately
+            let fileUrl = req.body.fileUrl;
     
             if (!uniqueId || !comment) {
                 return res.status(400).json({ message: 'uniqueId and comment are required' });
             }
     
             const file = await FileTrackModel.findOne({ uniqueId });
-            console.log('Found file:', file);
-    
             if (!file) {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar',  'ProPresident', 'President'];
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'ProPresident'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
-            if (currentDeptIndex === -1 || currentDeptIndex === departmentSequence.length - 1) {
-                return res.status(400).json({ message: 'Invalid department or file already at final department' });
+            if (currentDeptIndex === -1 || (file.cost < 100000 && currentDeptIndex === 2)) {
+                return res.status(400).json({ message: 'Invalid department or file cannot proceed further' });
             }
     
-            const nextDept = departmentSequence[currentDeptIndex + 1];
+            const nextDept = (file.cost < 100000 && currentDeptIndex === 1)
+                ? 'Registrar'
+                : departmentSequence[currentDeptIndex + 1];
     
-            // If fileUrl is not provided in the request, use the existing one
             if (!fileUrl) {
                 fileUrl = file.fileUrl;
             }
@@ -118,28 +115,30 @@ module.exports = {
                 fileUrl: fileUrl
             };
     
-            console.log('New comment:', newComment); 
-    
             const newTransition = {
                 FromDept: file.CurrDept,
                 ToDept: nextDept,
                 date: new Date(),
-                status: 'sent',
+                status: 'sent'
             };
+    
+            const nextDeptIndex = departmentSequence.indexOf(nextDept);
     
             const updatedFile = await FileTrackModel.findOneAndUpdate(
                 { uniqueId },
                 {
                     $set: {
                         CurrDept: nextDept,
-                        Department: departmentSequence[currentDeptIndex + 2] // If you want to set to the department after the next one
+                        Department: nextDeptIndex + 1 < departmentSequence.length
+                            ? departmentSequence[nextDeptIndex + 1]
+                            : nextDept
                     },
                     $addToSet: {
                         comments: newComment,
                         transitions: newTransition
                     }
                 },
-                { new: true } // Return the updated document
+                { new: true }
             );
     
             return res.status(200).json({ message: 'File status updated successfully', data: updatedFile });
@@ -205,7 +204,7 @@ module.exports = {
                 {
                     $set: {
                         CurrDept: previousDept,
-                        Department: previousDept
+                        Department: departmentSequence[currentDeptIndex - 2]
                     },
                     $addToSet: {
                         comments: newComment,
@@ -272,7 +271,62 @@ module.exports = {
         } catch (error) {
             return res.status(500).json({ message: 'Error retrieving files sent from department', error });
         }
+    },
+     approveFile : async (req, res) => {
+        try {
+            const { uniqueId, comment } = req.body;
+            let fileUrl = req.body.fileUrl;
+    
+            if (!uniqueId || !comment) {
+                return res.status(400).json({ message: 'uniqueId and comment are required' });
+            }
+    
+            const file = await FileTrackModel.findOne({ uniqueId });
+            if (!file) {
+                return res.status(404).json({ message: 'File not found' });
+            }
+    
+            const isEligibleForApproval = (file.cost < 100000 && file.CurrDept === 'Registrar') || (file.CurrDept === 'ProPresident');
+    
+            if (!isEligibleForApproval) {
+                return res.status(400).json({ message: 'File is not eligible for approval at this department' });
+            }
+    
+            if (!fileUrl) {
+                fileUrl = file.fileUrl;
+            }
+    
+            const newComment = {
+                CurrDept: file.CurrDept,
+                comment,
+                fileUrl: fileUrl
+            };
+    
+            const newTransition = {
+                FromDept: file.CurrDept,
+                ToDept: file.CurrDept,  // No department change on approval
+                date: new Date(),
+                status: 'approved'
+            };
+    
+            const updatedFile = await FileTrackModel.findOneAndUpdate(
+                { uniqueId },
+                {
+                    $addToSet: {
+                        comments: newComment,
+                        transitions: newTransition
+                    }
+                },
+                { new: true }
+            );
+    
+            return res.status(200).json({ message: 'File approved successfully', data: updatedFile });
+        } catch (error) {
+            console.error('Error approving file:', error);
+            return res.status(500).json({ message: 'Error approving file', error: error.message });
+        }
     }
+    
     
   
     
