@@ -175,7 +175,7 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar' ,'ProPresident', 'President',];
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar' ,'propresident', 'President',];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
             if (currentDeptIndex <= 0) {
@@ -243,7 +243,7 @@ module.exports = {
         }
     },
    getFilesSentFromDepartment : async (req, res) => {
-     const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'Pro President', 'President'];
+     const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'propresident', 'President'];
 
     const getNextDepartment = (currentDepartment) => {
         const currentIndex = departmentSequence.indexOf(currentDepartment);

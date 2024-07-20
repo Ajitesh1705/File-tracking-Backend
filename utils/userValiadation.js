@@ -44,34 +44,6 @@ const fileRegistrationValidate = (req, res, next) => {
         return res.status(400).json({ message: "Bad Request", error })
     }
     next();
-}
-const verifyToken = (req, res, next) => {
-    
-    const token = req.headers.authorization;
-
-    //  token exists
-    if (!token) {
-        return res.status(401).json({ message: 'No token provided' });
-    }
-
-    try {
-        console.log(token)
-
-       const token_new = token.slice(7)
-
-        const decoded = jwt.verify(token_new, process.env.SECRET);
-
-        req.user = decoded;
-
-        
-        console.log(decoded)
-
-        next();
-    } catch (error) {
-        
-        console.error('Error verifying token:', error.message);
-        return res.status(403).json({ message: 'Failed to authenticate token' });
-    }
 };
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -95,6 +67,6 @@ module.exports = {
     userRegisterValidate,
     userLoginValidate,
     fileRegistrationValidate,
-    verifyToken,
+   
 
 }

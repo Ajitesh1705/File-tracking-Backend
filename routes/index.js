@@ -1,7 +1,7 @@
 const express = require('express');
 const {ensureAuthenticated} = require('../utils/auth')
 const { registerUser, loginUser, getUsers, registerFile,updateFileStatus, getFileNamesAndIds,getFilesByCurrDept, rework, getFileTimeline, getFilesSentFromDepartment, approveFile} = require('../userController');
-const { userRegisterValidate, userLoginValidate, verifyToken} = require('../utils/userValiadation');
+const { userRegisterValidate, userLoginValidate, } = require('../utils/userValiadation');
 const { verify } = require('jsonwebtoken');
 const routes = express.Router();
 
@@ -27,6 +27,6 @@ routes.post('/approveFile',  approveFile);
 
 routes.get('/filetimeline/:uniqueId' , getFileTimeline)
 
-routes.get('/sent-files/:department', ensureAuthenticated, getFilesSentFromDepartment);
+routes.get('/sent-files/:department',  getFilesSentFromDepartment);
 
 module.exports = routes
