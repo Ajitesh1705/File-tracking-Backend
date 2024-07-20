@@ -94,7 +94,7 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'President', 'ProPresident'];
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'ProPresident', 'President'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
             if (currentDeptIndex === -1 || (file.cost < 100000 && currentDeptIndex === 2)) {
@@ -175,7 +175,7 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar' ,'propresident', 'President',];
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar' ,'Propresident', 'President',];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
             if (currentDeptIndex <= 0) {
@@ -243,7 +243,7 @@ module.exports = {
         }
     },
    getFilesSentFromDepartment : async (req, res) => {
-     const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'propresident', 'President'];
+     const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
 
     const getNextDepartment = (currentDepartment) => {
         const currentIndex = departmentSequence.indexOf(currentDepartment);
@@ -286,7 +286,7 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const isEligibleForApproval = (file.cost < 100000 && file.CurrDept === 'Registrar') || (file.CurrDept === 'ProPresident');
+            const isEligibleForApproval = (file.cost < 100000 && file.CurrDept === 'Registrar') || (file.CurrDept === 'Propresident');
     
             if (!isEligibleForApproval) {
                 return res.status(400).json({ message: 'File is not eligible for approval at this department' });
