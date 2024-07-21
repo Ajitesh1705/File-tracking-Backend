@@ -321,6 +321,7 @@ module.exports = {
                         transitions: newTransition
                     },
                     CurrDept: 'approved', 
+                    Department: file.CurrDept,
                     approved: true 
                 },
                 { new: true }
