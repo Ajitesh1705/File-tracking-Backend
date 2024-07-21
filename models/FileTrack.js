@@ -73,7 +73,11 @@ const fileTransferSchema = new Schema({
         default: Date.now
     },
     comments: [commentSchema], 
-    transitions: [transitionSchema]
+    transitions: [transitionSchema],
+    approved: {
+        type: Boolean,
+        default: false
+    }
 });
 
 const FileTrackModel = mongoose.model('FileTransfer', fileTransferSchema);

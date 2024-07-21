@@ -5,6 +5,7 @@ require('dotenv').config();
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
+const FileTrackModel = require("../models/FileTrack")
 
 const userRegisterValidate = (req, res, next)=>{
     const schema = Joi.object({
@@ -59,6 +60,20 @@ const storage = new CloudinaryStorage({
         public_id: (req, file) => file.originalname,
     },
 });
+const getApprovedFiles = async (req, res) => {
+    try {
+        const approvedFiles = await FileTrackModel.find({ "transitions.status": "approved" });
+
+        if (!approvedFiles.length) {
+            return res.status(404).json({ message: 'No approved files found' });
+        }
+
+        return res.status(200).json({ message: 'Approved files retrieved successfully', data: approvedFiles });
+    } catch (error) {
+        console.error('Error fetching approved files:', error);
+        return res.status(500).json({ message: 'Error fetching approved files', error });
+    }
+};
 
 
 
@@ -67,6 +82,6 @@ module.exports = {
     userRegisterValidate,
     userLoginValidate,
     fileRegistrationValidate,
-   
+    getApprovedFiles
 
 }

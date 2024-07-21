@@ -229,14 +229,16 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const timeline = file.transitions.map(transition => ({
-                from: transition.FromDept,
-                to: transition.ToDept,
-                date: transition.date.toLocaleDateString('en-IN'),
-                status: transition.status,
-                comment: file.comments[1] ? file.comments[1].comment : ""
-                
-            }));
+            const timeline = file.transitions.map(transition => {
+                const correspondingComment = file.comments.find(comment => comment.CurrDept === transition.FromDept);
+                return {
+                    from: transition.FromDept,
+                    to: transition.ToDept,
+                    date: transition.date.toLocaleDateString('en-IN'),
+                    status: transition.status,
+                    comment: correspondingComment ? correspondingComment.comment : ''
+                };
+            });
     
             return res.status(200).json({ message: 'File timeline retrieved successfully', timeline });
         } catch (error) {
@@ -288,8 +290,7 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const isEligibleForApproval = (file.cost < 100000 && file.CurrDept === 'Registrar') || (file.CurrDept === 'Propresident');
-    
+            const isEligibleForApproval = (file.cost < 100000 && file.CurrDept === 'Registrar') || (file.CurrDept === 'President');
             if (!isEligibleForApproval) {
                 return res.status(400).json({ message: 'File is not eligible for approval at this department' });
             }
@@ -306,9 +307,10 @@ module.exports = {
     
             const newTransition = {
                 FromDept: file.CurrDept,
-                ToDept: file.CurrDept,  // No department change on approval
+                ToDept: 'approved', // or any other department you prefer
                 date: new Date(),
-                status: 'approved'
+                status: 'approved',
+                comment: comment
             };
     
             const updatedFile = await FileTrackModel.findOneAndUpdate(
@@ -317,7 +319,9 @@ module.exports = {
                     $addToSet: {
                         comments: newComment,
                         transitions: newTransition
-                    }
+                    },
+                    CurrDept: 'approved', 
+                    approved: true 
                 },
                 { new: true }
             );
@@ -327,7 +331,8 @@ module.exports = {
             console.error('Error approving file:', error);
             return res.status(500).json({ message: 'Error approving file', error: error.message });
         }
-    }
+
+     }
     
     
   
