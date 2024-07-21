@@ -94,7 +94,7 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'ProPresident', 'President'];
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
             if (currentDeptIndex === -1 || (file.cost < 100000 && currentDeptIndex === 2)) {
