@@ -37,6 +37,10 @@ const transitionSchema = new Schema({
         type: String,
         enum: ['sent', 'received', 'rework'],
         default: 'sent'
+    },
+    comment:{
+        type: String,
+        required: true
     }
 });
 const fileTransferSchema = new Schema({

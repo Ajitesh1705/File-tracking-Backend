@@ -233,7 +233,9 @@ module.exports = {
                 from: transition.FromDept,
                 to: transition.ToDept,
                 date: transition.date.toLocaleDateString('en-IN'),
-                status: transition.status
+                status: transition.status,
+                comment: file.comments[1] ? file.comments[1].comment : ""
+                
             }));
     
             return res.status(200).json({ message: 'File timeline retrieved successfully', timeline });
