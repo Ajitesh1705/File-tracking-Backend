@@ -170,12 +170,12 @@ module.exports = {
         try {
             const { uniqueId, comment } = req.body;
             const file = await FileTrackModel.findOne({ uniqueId });
-            
+    
             if (!file) {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar' ,'Propresident', 'President',];
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
             if (currentDeptIndex <= 0) {
@@ -195,7 +195,8 @@ module.exports = {
                 FromDept: file.CurrDept,
                 ToDept: previousDept,
                 date: new Date(),
-                status: 'rework'
+                status: 'rework',
+                comment // Include comment in the transition schema
             };
     
             // Update the file with the new department, comment, and transition
@@ -204,7 +205,7 @@ module.exports = {
                 {
                     $set: {
                         CurrDept: previousDept,
-                        Department: departmentSequence[currentDeptIndex - 2]
+                        Department: departmentSequence[currentDeptIndex - 2] // Move to the department before previous
                     },
                     $addToSet: {
                         comments: newComment,
@@ -333,6 +334,33 @@ module.exports = {
             return res.status(500).json({ message: 'Error approving file', error: error.message });
         }
 
+     },
+     GetFilesSentForRework : async (req , res)=> {
+
+        try {
+            const { department } = req.params; // Get department from route params
+    
+            if (!department) {
+                return res.status(400).json({ message: 'Department is required' });
+            }
+    
+            // Find files with rework status in transitions and the specified current department
+            const reworkFiles = await FileTrackModel.find({
+                CurrDept: department,
+                'transitions.status': 'rework'
+            }).select('fileName uniqueId CurrDept Department transitions comments'); // Select specific fields if needed
+    
+            if (!reworkFiles.length) {
+                return res.status(404).json({ message: 'No files sent for rework found in this department' });
+            }
+    
+            return res.status(200).json({ message: 'Files sent for rework retrieved successfully', data: reworkFiles });
+        } catch (error) {
+            console.error('Error fetching files sent for rework:', error);
+            return res.status(500).json({ message: 'Error fetching files sent for rework', error: error.message });
+        }
+
+        
      }
     
     
