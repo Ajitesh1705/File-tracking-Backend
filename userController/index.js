@@ -149,10 +149,20 @@ module.exports = {
     },
      getFileNamesAndIds: async (req, res) => {
         try {
-            const files = await FileTrackModel.find({}); // Fetch fileName and uniqueId fields only
-            return res.status(200).json({ data: files });
+            const registeredFiles = await FileTrackModel.find();
+    
+            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
+            const financeIndex = departmentSequence.indexOf('Finance');
+    
+            const filteredFiles = registeredFiles.filter(file => {
+                const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
+                return currentDeptIndex < financeIndex;
+            });
+    
+            return res.status(200).json({ message: 'Registered files retrieved successfully', data: filteredFiles });
         } catch (error) {
-            return res.status(500).json({ message: 'Error fetching file names and IDs', error });
+            console.error('Error fetching registered files:', error);
+            return res.status(500).json({ message: 'Error fetching registered files', error });
         }
     },
     getFilesByCurrDept: async (req, res) => {
@@ -223,6 +233,7 @@ module.exports = {
     },
      getFileTimeline : async (req, res) => {
         try {
+            const moment = require('moment-timezone');
             const { uniqueId } = req.params;
             const file = await FileTrackModel.findOne({ uniqueId });
     
@@ -235,7 +246,7 @@ module.exports = {
                 return {
                     from: transition.FromDept,
                     to: transition.ToDept,
-                    date: transition.date.toLocaleDateString('en-IN'),
+                    date: moment(transition.date).tz('Asia/Kolkata').format('DD-MM-YYYY HH:mm:ss'),
                     status: transition.status,
                     comment: correspondingComment ? correspondingComment.comment : ''
                 };
@@ -303,7 +314,7 @@ module.exports = {
             const newComment = {
                 CurrDept: file.CurrDept,
                 comment,
-                fileUrl: fileUrl
+                fileUrl : file.fileUrl 
             };
     
             const newTransition = {

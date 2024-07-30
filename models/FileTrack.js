@@ -35,7 +35,7 @@ const transitionSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['sent', 'received', 'rework'],
+        enum: ['saved', 'sent', 'received', 'rework'],
         default: 'sent'
     },
     comment:{
