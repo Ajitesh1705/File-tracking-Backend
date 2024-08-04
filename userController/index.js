@@ -231,33 +231,31 @@ module.exports = {
             return res.status(500).json({ message: 'Error sending file for rework', error: error.message });
         }
     },
-     getFileTimeline : async (req, res) => {
-        try {
-            const moment = require('moment-timezone');
-            const { uniqueId } = req.params;
-            const file = await FileTrackModel.findOne({ uniqueId });
     
-            if (!file) {
-                return res.status(404).json({ message: 'File not found' });
-            }
-    
-            const timeline = file.transitions.map(transition => {
-                const correspondingComment = file.comments.find(comment => comment.CurrDept === transition.FromDept);
-                return {
-                    from: transition.FromDept,
-                    to: transition.ToDept,
-                    date: moment(transition.date).tz('Asia/Kolkata').format('DD-MM-YYYY HH:mm:ss'),
-                    status: transition.status,
-                    comment: correspondingComment ? correspondingComment.comment : ''
-                };
-            });
-    
-            return res.status(200).json({ message: 'File timeline retrieved successfully', timeline });
-        } catch (error) {
-            console.error('Error fetching file timeline: ', error);
-            return res.status(500).json({ message: 'Error fetching file timeline', error });
+    getFileTimeline : async (req, res) => {
+    try {
+        const { uniqueId } = req.params;
+        const file = await FileTrackModel.findOne({ uniqueId });
+        const moment = require('moment-timezone');
+
+        if (!file) {
+            return res.status(404).json({ message: 'File not found' });
         }
-    },
+
+        const timeline = file.transitions.map(transition => ({
+            from: transition.FromDept,
+            to: transition.ToDept,
+            date: moment(transition.date).tz('Asia/Kolkata').format('DD-MM-YYYY HH:mm:ss'),
+            status: transition.status,
+            comment: transition.comment 
+        }));
+
+        return res.status(200).json({ message: 'File timeline retrieved successfully', timeline });
+    } catch (error) {
+        console.error('Error fetching file timeline: ', error);
+        return res.status(500).json({ message: 'Error fetching file timeline', error });
+    }
+},
    getFilesSentFromDepartment : async (req, res) => {
      const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
 
@@ -320,7 +318,7 @@ module.exports = {
             const newTransition = {
                 FromDept: file.CurrDept,
                 ToDept: 'approved', // or any other department you prefer
-                date: new Date(),
+                date,
                 status: 'approved',
                 comment: comment
             };
@@ -374,6 +372,9 @@ module.exports = {
         
      }
     
+
+
+
     
   
     
