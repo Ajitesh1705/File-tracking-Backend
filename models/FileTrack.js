@@ -14,6 +14,10 @@ const commentSchema = new Schema({
         type: String,
         required: true
     },
+    BudgetfileUrl: {
+        type: String,
+       required : false
+    },
     timestamp: {
         type: Date,
         default: Date.now

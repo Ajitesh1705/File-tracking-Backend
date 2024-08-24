@@ -65,11 +65,12 @@ module.exports = {
     registerFile: async (req, res) => {
         try {
             
-            const { fileName, CurrDept, fileDescription, cost, ForDepartment, Department, uniqueId, comment,fileUrl } = req.body;;
+            const { fileName, CurrDept, fileDescription, cost, ForDepartment, Department, uniqueId, comment,fileUrl, BudgetfileUrl } = req.body;;
             const newComment = {
                 CurrDept: CurrDept,
                 comment: comment,
                 fileUrl: fileUrl,
+                budgetFileUrl: BudgetfileUrl,
             };
             const fileTransfer = new FileTrackModel({ fileName, CurrDept, fileDescription, cost, ForDepartment,Department, uniqueId,fileUrl, comments: [newComment],});
             const savedRegistration = await fileTransfer.save();
@@ -94,7 +95,7 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
+            const departmentSequence = ['Directorate', 'Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
             if (currentDeptIndex === -1 || (file.cost < 100000 && currentDeptIndex === 2)) {
@@ -151,7 +152,7 @@ module.exports = {
         try {
             const registeredFiles = await FileTrackModel.find();
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
+            const departmentSequence = ['Directorate', 'Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
             const financeIndex = departmentSequence.indexOf('Finance');
     
             const filteredFiles = registeredFiles.filter(file => {
@@ -185,7 +186,7 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
     
-            const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
+            const departmentSequence = ['Directorate', 'Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
             if (currentDeptIndex <= 0) {
@@ -257,7 +258,7 @@ module.exports = {
     }
 },
    getFilesSentFromDepartment : async (req, res) => {
-     const departmentSequence = ['Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
+     const departmentSequence = ['Directorate', 'Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
 
     const getNextDepartment = (currentDepartment) => {
         const currentIndex = departmentSequence.indexOf(currentDepartment);
@@ -317,7 +318,7 @@ module.exports = {
     
             const newTransition = {
                 FromDept: file.CurrDept,
-                ToDept: 'approved', // or any other department you prefer
+                ToDept: 'approved', 
                 date,
                 status: 'approved',
                 comment: comment
@@ -370,9 +371,8 @@ module.exports = {
         }
 
         
-     }
-    
-
+        
+     },
 
 
     
