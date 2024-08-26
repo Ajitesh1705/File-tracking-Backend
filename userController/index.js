@@ -98,11 +98,11 @@ module.exports = {
             const departmentSequence = ['Directorate', 'Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
-            if (currentDeptIndex === -1 || (file.cost < 100000 && currentDeptIndex === 2)) {
+            if (currentDeptIndex === -1 || (file.cost < 100000 && currentDeptIndex === 3)) {
                 return res.status(400).json({ message: 'Invalid department or file cannot proceed further' });
             }
     
-            const nextDept = (file.cost < 100000 && currentDeptIndex === 1)
+            const nextDept = (file.cost < 100000 && currentDeptIndex === 2)
                 ? 'Registrar'
                 : departmentSequence[currentDeptIndex + 1];
     
