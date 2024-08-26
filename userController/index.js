@@ -120,7 +120,8 @@ module.exports = {
                 FromDept: file.CurrDept,
                 ToDept: nextDept,
                 date: new Date(),
-                status: 'sent'
+                status: 'sent',
+                comment
             };
     
             const nextDeptIndex = departmentSequence.indexOf(nextDept);
@@ -136,7 +137,11 @@ module.exports = {
                     },
                     $addToSet: {
                         comments: newComment,
-                        transitions: newTransition
+                        transitions: newTransition,
+                        sentHistory: {
+                            department: file.CurrDept,
+                            timestamp: new Date()
+                        }
                     }
                 },
                 { new: true }
@@ -207,7 +212,7 @@ module.exports = {
                 ToDept: previousDept,
                 date: new Date(),
                 status: 'rework',
-                comment // Include comment in the transition schema
+                comment 
             };
     
             // Update the file with the new department, comment, and transition
@@ -258,35 +263,22 @@ module.exports = {
     }
 },
    getFilesSentFromDepartment : async (req, res) => {
-     const departmentSequence = ['Directorate', 'Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
+    try {
+        const { department } = req.params;
+        const sentFiles = await FileTrackModel.find({
+            'sentHistory.department': department
+        });
 
-    const getNextDepartment = (currentDepartment) => {
-        const currentIndex = departmentSequence.indexOf(currentDepartment);
-        if (currentIndex === -1 || currentIndex === departmentSequence.length - 1) {
-            return null;
+        if (!sentFiles.length) {
+            return res.status(404).json({ message: 'No files sent from this department' });
         }
-        return departmentSequence[currentIndex + 1];
-    };
 
-        try {
-            const { department } = req.params;
-            const nextDepartment = getNextDepartment(department);
-    
-            if (!nextDepartment) {
-                return res.status(400).json({ message: 'Invalid department or no next department in sequence' });
-            }
-    
-            const files = await FileTrackModel.find({ CurrDept: nextDepartment });
-    
-            if (!files.length) {
-                return res.status(404).json({ message: `No files found sent from department: ${department}` });
-            }
-    
-            return res.status(200).json({ message: 'Files retrieved successfully', data: files });
-        } catch (error) {
-            return res.status(500).json({ message: 'Error retrieving files sent from department', error });
-        }
-    },
+        return res.status(200).json({ message: 'Sent files retrieved successfully', data: sentFiles });
+    } catch (error) {
+        console.error('Error fetching sent files:', error);
+        return res.status(500).json({ message: 'Error fetching sent files', error });
+    }
+},
      approveFile : async (req, res) => {
         try {
             const { uniqueId, comment } = req.body;

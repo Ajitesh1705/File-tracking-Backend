@@ -81,7 +81,12 @@ const fileTransferSchema = new Schema({
     approved: {
         type: Boolean,
         default: false
-    }
+    },
+    sentHistory: [{
+        department: String,
+        timestamp: { type: Date, default: Date.now }
+    }]
+
 });
 
 const FileTrackModel = mongoose.model('FileTransfer', fileTransferSchema);
