@@ -319,7 +319,7 @@ module.exports = {
             const newTransition = {
                 FromDept: file.CurrDept,
                 ToDept: 'approved', 
-                date,
+                date: file.date,
                 status: 'approved',
                 comment: comment
             };
