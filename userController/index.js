@@ -365,6 +365,77 @@ module.exports = {
         
         
      },
+     getFileReworkTimeline : async (req, res) => {
+        try {
+            const { uniqueId } = req.params;
+            const file = await FileTrackModel.findOne({ uniqueId });
+    
+            if (!file) {
+                return res.status(404).json({ message: 'File not found' });
+            }
+    
+            // Find the last "rework" transition
+            const lastReworkTransition = file.transitions.filter(transition => transition.status === 'rework').pop();
+    
+            if (!lastReworkTransition) {
+                return res.status(400).json({ message: 'No rework transitions found for this file' });
+            }
+    
+         
+            const timeline = file.transitions
+                .filter(transition => transition.date <= lastReworkTransition.date)
+                .map(transition => ({
+                    from: transition.FromDept,
+                    to: transition.ToDept,
+                    date: transition.date.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }),
+                    status: transition.status,
+                    comment: transition.comment // Include comment if needed
+                }));
+    
+            return res.status(200).json({ message: 'File rework timeline retrieved successfully', timeline });
+        } catch (error) {
+            console.error('Error fetching file rework timeline: ', error);
+            return res.status(500).json({ message: 'Error fetching file rework timeline', error });
+        }
+
+    },
+     getPresidentApprovedFiles : async (req, res) => {
+        try {
+            const presidentApprovedFiles = await FileTrackModel.find({
+                "transitions.status": "approved",
+                "transitions.FromDept": "President"
+            });
+    
+            if (!presidentApprovedFiles.length) {
+                return res.status(404).json({ message: 'No files approved by the President found' });
+            }
+    
+            return res.status(200).json({ message: 'Files approved by the President retrieved successfully', data: presidentApprovedFiles });
+        } catch (error) {
+            console.error('Error fetching files approved by the President:', error);
+            return res.status(500).json({ message: 'Error fetching files approved by the President', error });
+        }
+    },
+     getReworkFilesByDept : async (req, res) => {
+        try {
+            const { department } = req.params;
+    
+            const reworkFiles = await FileTrackModel.find({
+                "transitions.status": "rework",
+                "transitions.FromDept": department
+            });
+    
+            if (!reworkFiles.length) {
+                return res.status(404).json({ message: `No files sent for rework by ${department} found` });
+            }
+    
+            return res.status(200).json({ message: `Files sent for rework by ${department} retrieved successfully`, data: reworkFiles });
+        } catch (error) {
+            console.error(`Error fetching files sent for rework by ${department}:`, error);
+            return res.status(500).json({ message: 'Error fetching files sent for rework', error });
+        }
+    },
+    
 
 
     
