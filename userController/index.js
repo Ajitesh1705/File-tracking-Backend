@@ -34,11 +34,7 @@ module.exports = {
                 .json({message: 'Auth failed, Invalid username/password'});
         }
 
-        // const isPassEqual = await bcrypt.compare(req.body.password, user.password);
-        // if(!isPassEqual){
-        //     return res.status(401)
-        //         .json({message: 'Auth failed, Invalid username/password'});
-        // }
+    
         const tokenObject = {
             _id: user._id,
             department: user.department,
@@ -350,7 +346,7 @@ module.exports = {
             const reworkFiles = await FileTrackModel.find({
                 CurrDept: department,
                 'transitions.status': 'rework'
-            }).select('fileName uniqueId CurrDept Department transitions comments'); // Select specific fields if needed
+            }).select('fileName uniqueId CurrDept Department fileDescription cost transitions comments'); // Select specific fields if needed
     
             if (!reworkFiles.length) {
                 return res.status(404).json({ message: 'No files sent for rework found in this department' });
