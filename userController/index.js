@@ -102,7 +102,7 @@ module.exports = {
                 return res.status(400).json({ message: 'Invalid department or file cannot proceed further' });
             }
     
-            const nextDept = (file.cost < 100000 && currentDeptIndex === 2)
+            const nextDept = (file.cost <= 100000 && currentDeptIndex === 2)
                 ? 'Registrar'
                 : departmentSequence[currentDeptIndex + 1];
     
