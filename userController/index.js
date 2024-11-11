@@ -63,6 +63,7 @@ module.exports = {
             
             const { fileName, CurrDept, fileDescription, cost, ForDepartment, Department, uniqueId, comment,fileUrl, BudgetfileUrl,renegotiation } = req.body;;
             const newComment = {
+                comment : comment,
                 CurrDept: CurrDept,
                 fileUrl: fileUrl,
                 budgetFileUrl: BudgetfileUrl,
