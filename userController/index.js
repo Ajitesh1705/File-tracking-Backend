@@ -9,7 +9,7 @@ module.exports = {
     // create MongoDB UserModel - Done
     // do password encrytion - Done
     // save data to mongodb - 
-    // return response to the cliein
+    // return response to the client       
     registerUser: async (req,res)=>{
         const userModel = new UserModel(req.body);
         userModel.password = await bcrypt.hash(req.body.password, 10);
@@ -61,14 +61,13 @@ module.exports = {
     registerFile: async (req, res) => {
         try {
             
-            const { fileName, CurrDept, fileDescription, cost, ForDepartment, Department, uniqueId, comment,fileUrl, BudgetfileUrl } = req.body;;
+            const { fileName, CurrDept, fileDescription, cost, ForDepartment, Department, uniqueId, comment,fileUrl, BudgetfileUrl,renegotiation } = req.body;;
             const newComment = {
                 CurrDept: CurrDept,
-                comment: comment,
                 fileUrl: fileUrl,
                 budgetFileUrl: BudgetfileUrl,
             };
-            const fileTransfer = new FileTrackModel({ fileName, CurrDept, fileDescription, cost, ForDepartment,Department, uniqueId,fileUrl, comments: [newComment],});
+            const fileTransfer = new FileTrackModel({ fileName, CurrDept, fileDescription, cost, ForDepartment,Department, uniqueId,fileUrl, renegotiation,comments: [newComment],});
             const savedRegistration = await fileTransfer.save();
             return res.status(201).json({ message: 'File details registered successfully', data: savedRegistration });
         } catch (error) {
@@ -431,6 +430,120 @@ module.exports = {
             return res.status(500).json({ message: 'Error fetching files sent for rework', error });
         }
     },
+     sendForRenegotiation : async (req, res) => {
+        try {
+            const { uniqueId, comment } = req.body;
+            const file = await FileTrackModel.findOne({ uniqueId });
+    
+            if (!file) {
+                return res.status(404).json({ message: 'File not found' });
+            }
+    
+            if (file.CurrDept !== 'Finance') {
+                return res.status(400).json({ message: 'Only Finance can send for renegotiation' });
+            }
+    
+            const departmentSequence = ['Purchase', 'Finance'];
+            const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
+            const nextDept = 'Purchase';
+    
+            const newComment = {
+                CurrDept: file.CurrDept,
+                comment,
+                fileUrl: file.fileUrl
+            };
+    
+            const newTransition = {
+                FromDept: file.CurrDept,
+                ToDept: nextDept,
+                date: new Date(),
+                status: 'renegotiation'
+            };
+    
+            const updatedFile = await FileTrackModel.findOneAndUpdate(
+                { uniqueId },
+                {
+                    $set: { CurrDept: nextDept },
+                    $addToSet: { comments: newComment, transitions: newTransition }
+                },
+                { new: true }
+            );
+    
+            return res.status(200).json({ message: 'File sent for renegotiation successfully', data: updatedFile });
+        } catch (error) {
+            console.error('Error sending file for renegotiation:', error);
+            return res.status(500).json({ message: 'Error sending file for renegotiation', error: error.message });
+        }
+    },
+    renegotiateFile: async (req, res) => {
+        try {
+            const { uniqueId, comment, status } = req.body; 
+            const file = await FileTrackModel.findOne({ uniqueId });
+    
+            if (!file || file.CurrDept !== 'Finance') {
+                return res.status(400).json({ message: 'File not found or not at Finance department for verification' });
+            }
+    
+            file.CurrDept = 'Purchase';
+            file.renegotiation = status === 'Complete' ? 'Complete' : 'Incomplete';
+    
+            const newTransition = {
+                FromDept: 'Finance',
+                ToDept: 'Purchase',
+                date: new Date(),
+                status: 'renegotiation'
+            };
+    
+            const newComment = {
+                CurrDept: 'Finance',
+                comment: comment,
+                fileUrl: file.fileUrl // Assuming fileUrl remains constant
+            };
+    
+            file.comments.push(newComment);
+            file.transitions.push(newTransition);
+    
+            await file.save();
+            return res.status(200).json({ message: 'File sent for renegotiation', data: file });
+        } catch (error) {
+            return res.status(500).json({ message: 'Error sending file for renegotiation', error });
+        }
+    },
+     updateRenegotiationStatus : async (req, res) => {
+        try {
+            const { uniqueId } = req.body;
+    
+            // Find the file
+            const file = await FileTrackModel.findOne({ uniqueId, CurrDept: 'Purchase' });
+            if (!file) {
+                return res.status(404).json({ message: 'File not found in Purchase department' });
+            }
+            
+            const newComment = {
+                CurrDept: 'Finance',
+                comment: file.comment,
+                fileUrl: file.fileUrl 
+            };
+            file.comments.push(newComment);
+
+            // Update Renegotiation status
+            if (file.renegotiation === 'Complete') {
+                return res.status(400).json({ message: 'Renegotiation is already marked as Complete' });
+            }
+    
+            file.renegotiation = 'Complete';
+            const updatedFile = await file.save();
+    
+            return res.status(200).json({ message: 'Renegotiation status updated to Complete', data: updatedFile });
+        } catch (error) {
+            console.error('Error updating renegotiation status:', error);
+            return res.status(500).json({ message: 'Error updating renegotiation status', error });
+        }
+    }
+    
+    
+    
+    
     
 
 
