@@ -8,11 +8,11 @@ const commentSchema = new Schema({
     },
     comment: {
         type: String,
-        required: true
+        required: false
     },
     fileUrl: {
         type: String,
-        required: true
+        required: false
     },
     BudgetfileUrl: {
         type: String,
@@ -39,12 +39,12 @@ const transitionSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['saved', 'sent', 'received', 'rework','renegotiation'],
+        enum: ['saved', 'sent', 'received', 'rework','renegotiation', 'renegotiation complete'],
         default: 'sent'
     },
     comment:{
         type: String,
-        required: true
+        required: false
     }
 });
 const fileTransferSchema = new Schema({

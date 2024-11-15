@@ -1,7 +1,7 @@
 const express = require('express');
 const {ensureAuthenticated} = require('../utils/auth')
-const { registerUser, loginUser, getUsers, registerFile,updateFileStatus, getFileNamesAndIds,getFilesByCurrDept, rework, getFileTimeline, getFilesSentFromDepartment, approveFile, GetFilesSentForRework,  getFileReworkTimeline, getPresidentApprovedFiles,getReworkFilesByDept, sendForRenegotiation, updateRenegotiationStatus} = require('../userController');
-const { userRegisterValidate, userLoginValidate,getApprovedFiles } = require('../utils/userValiadation');
+const { registerUser, loginUser, getUsers, registerFile,updateFileStatus, getFileNamesAndIds,getFilesByCurrDept, rework, getFileTimeline, getFilesSentFromDepartment, approveFile, GetFilesSentForRework,  getFileReworkTimeline, getPresidentApprovedFiles,getReworkFilesByDept, sendForRenegotiation, updateRenegotiation} = require('../userController');
+const { userRegisterValidate, userLoginValidate,getApprovedFiles, GetFilesForRenego, GetRenegoComp } = require('../utils/userValiadation');
 const { verify } = require('jsonwebtoken');
 const routes = express.Router();
 
@@ -43,7 +43,13 @@ routes.get('/get-rework/:department', getReworkFilesByDept);
 
 routes.post('/renegotiation', sendForRenegotiation)
 
-routes.post('/updaterenego', updateRenegotiationStatus)
+routes.post('/updaterenego', updateRenegotiation)
+
+routes.get('/getRenego', GetFilesForRenego);
+
+routes.get('/getRenegoComp', GetRenegoComp);
+
+
 
 
 

@@ -68,6 +68,9 @@ module.exports = {
                 fileUrl: fileUrl,
                 budgetFileUrl: BudgetfileUrl,
             };
+            if (!comment || !fileUrl) {
+                return res.status(400).json({ message: 'Comment and fileUrl are required for registration' });
+            }
             const fileTransfer = new FileTrackModel({ fileName, CurrDept, fileDescription, cost, ForDepartment,Department, uniqueId,fileUrl, renegotiation,comments: [newComment],});
             const savedRegistration = await fileTransfer.save();
             return res.status(201).json({ message: 'File details registered successfully', data: savedRegistration });
@@ -346,7 +349,7 @@ module.exports = {
             const reworkFiles = await FileTrackModel.find({
                 CurrDept: department,
                 'transitions.status': 'rework'
-            }).select('fileName uniqueId CurrDept Department fileDescription cost transitions comments'); // Select specific fields if needed
+            }).select('fileName uniqueId CurrDept Department fileDescription cost transitions comments'); 
     
             if (!reworkFiles.length) {
                 return res.status(404).json({ message: 'No files sent for rework found in this department' });
@@ -498,7 +501,7 @@ module.exports = {
             const newComment = {
                 CurrDept: 'Finance',
                 comment: comment,
-                fileUrl: file.fileUrl // Assuming fileUrl remains constant
+                fileUrl: file.fileUrl 
             };
     
             file.comments.push(newComment);
@@ -510,29 +513,40 @@ module.exports = {
             return res.status(500).json({ message: 'Error sending file for renegotiation', error });
         }
     },
-     updateRenegotiationStatus : async (req, res) => {
+    updateRenegotiation : async(req,res) => {
+
         try {
             const { uniqueId } = req.body;
     
-            // Find the file
-            const file = await FileTrackModel.findOne({ uniqueId, CurrDept: 'Purchase' });
-            if (!file) {
-                return res.status(404).json({ message: 'File not found in Purchase department' });
-            }
-            
-            const newComment = {
-                CurrDept: 'Finance',
-                comment: file.comment,
-                fileUrl: file.fileUrl 
-            };
-            file.comments.push(newComment);
-
-            // Update Renegotiation status
-            if (file.renegotiation === 'Complete') {
-                return res.status(400).json({ message: 'Renegotiation is already marked as Complete' });
+            // Validate input
+            if (!uniqueId) {
+                return res.status(400).json({ message: 'uniqueId is required' });
             }
     
+            // Find the file based on the uniqueId
+            const file = await FileTrackModel.findOne({ uniqueId });
+    
+            if (!file) {
+                return res.status(404).json({ message: 'File not found' });
+            }
+    
+            // Check if the current department is 'Purchase'
+            if (file.CurrDept !== 'Purchase') {
+                return res.status(400).json({ message: 'Renegotiation status can only be updated in the Purchase department.' });
+            }
+    
+           
             file.renegotiation = 'Complete';
+
+            const newTransition = {
+                FromDept: "Purchase",
+                ToDept: "Finance",
+                date: new Date(),
+                status: 'renegotiation complete'
+            };
+            
+            file.transitions.push(newTransition);
+            
             const updatedFile = await file.save();
     
             return res.status(200).json({ message: 'Renegotiation status updated to Complete', data: updatedFile });
@@ -540,18 +554,8 @@ module.exports = {
             console.error('Error updating renegotiation status:', error);
             return res.status(500).json({ message: 'Error updating renegotiation status', error });
         }
-    }
     
-    
-    
-    
-    
-
-
-    
+    },
   
-    
-
-    
 
 }
