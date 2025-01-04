@@ -143,6 +143,10 @@ module.exports = {
             if (!file) {
                 return res.status(404).json({ message: 'File not found' });
             }
+
+            if (file.CurrDept === 'Finance' && file.renegotiation === 'Incomplete') {
+                return res.status(400).json({ message: 'Renegotiation is incomplete. The file cannot proceed from Finance.' });
+            }
     
             const departmentSequence = ['Directorate', 'Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
