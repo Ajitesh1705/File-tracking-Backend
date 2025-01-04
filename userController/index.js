@@ -60,24 +60,74 @@ module.exports = {
     },
     registerFile: async (req, res) => {
         try {
+            const {
+                fileName,
+                CurrDept,
+                fileDescription,
+                cost,
+                ForDepartment,
+                Department,
+                uniqueId,
+                comment,
+                fileUrl,
+                BudgetfileUrl,
+                renegotiation
+            } = req.body;
+    
+            if (!comment || !fileUrl) {
+                return res.status(400).json({ message: 'Comment and fileUrl are required for registration' });
+            }
+    
             
-            const { fileName, CurrDept, fileDescription, cost, ForDepartment, Department, uniqueId, comment,fileUrl, BudgetfileUrl,renegotiation } = req.body;;
+            const departmentFlow = ["Directorate", "Purchase", "Finance", "Registrar", "President", "Pro President"];
+            const currentIndex = departmentFlow.indexOf(CurrDept);
+    
+            if (currentIndex === -1 || currentIndex === departmentFlow.length - 1) {
+                return res.status(400).json({ message: 'Invalid current department or no next department available' });
+            }
+    
+            const nextDept = departmentFlow[currentIndex + 1];
+    
             const newComment = {
-                comment : comment,
+                comment: comment,
                 CurrDept: CurrDept,
                 fileUrl: fileUrl,
                 budgetFileUrl: BudgetfileUrl,
             };
-            if (!comment || !fileUrl) {
-                return res.status(400).json({ message: 'Comment and fileUrl are required for registration' });
-            }
-            const fileTransfer = new FileTrackModel({ fileName, CurrDept, fileDescription, cost, ForDepartment,Department, uniqueId,fileUrl, renegotiation,comments: [newComment],});
+    
+            const transition = {
+                FromDept: CurrDept,
+                ToDept: nextDept,
+                status: "sent",
+                comment: comment,
+            };
+    
+            const fileTransfer = new FileTrackModel({
+                fileName,
+                CurrDept: nextDept, 
+                fileDescription,
+                cost,
+                ForDepartment,
+                Department,
+                uniqueId,
+                fileUrl,
+                renegotiation,
+                comments: [newComment],
+                transitions: [transition],
+            });
+    
             const savedRegistration = await fileTransfer.save();
-            return res.status(201).json({ message: 'File details registered successfully', data: savedRegistration });
+    
+            return res.status(201).json({
+                message: 'File registered and sent to the next department successfully',
+                data: savedRegistration
+            });
         } catch (error) {
-            return res.status(500).json({ message: 'Error registering file details', error });
+            console.error('Error registering file:', error);
+            return res.status(500).json({ message: 'Error registering file', error });
         }
     },
+    
    
 
     updateFileStatus: async (req, res) => {

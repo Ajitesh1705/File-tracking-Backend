@@ -15,8 +15,6 @@ routes.get('/users', getUsers);
 
 routes.post('/registerfile', ensureAuthenticated,registerFile);
 
-routes.post('/directorateregister' , ensureAuthenticated, registerFile)
-
 routes.get('/getname', getFileNamesAndIds);
 
 routes.get('/files/:CurrDept', getFilesByCurrDept);

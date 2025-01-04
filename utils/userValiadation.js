@@ -77,30 +77,50 @@ const getApprovedFiles = async (req, res) => {
 };
 const GetFilesForRenego = async (req, res) => {
     try {
-        const approvedFiles = await FileTrackModel.find({ "transitions.status": "renegotiation" });
+        // Query to find all files with renegotiation status as "Incomplete"
+        const files = await FileTrackModel.find({ renegotiation: "Incomplete" });
 
-        if (!approvedFiles.length) {
-            return res.status(404).json({ message: 'No approved files found' });
+        // Check if any files were found
+        if (!files.length) {
+            return res.status(404).json({ message: "No files with incomplete renegotiation found" });
         }
 
-        return res.status(200).json({ message: 'Renegotiation files retrieved successfully', data: approvedFiles });
+        // Return the list of files
+        return res.status(200).json({
+            message: "Files with incomplete renegotiation retrieved successfully",
+            data: files,
+        });
     } catch (error) {
-        console.error('Error fetching approved files:', error);
-        return res.status(500).json({ message: 'Error fetching approved files', error });
+        // Handle errors
+        console.error("Error fetching files with incomplete renegotiation:", error);
+        return res.status(500).json({
+            message: "Error fetching files with incomplete renegotiation",
+            error: error.message,
+        });
     }
 };
 const GetRenegoComp = async (req, res) => {
     try {
-        const approvedFiles = await FileTrackModel.find({ "transitions.status": "renegotiation complete" });
+        // Query to find all files with renegotiation status as "Incomplete"
+        const files = await FileTrackModel.find({ renegotiation: "Incomplete" });
 
-        if (!approvedFiles.length) {
-            return res.status(404).json({ message: 'No approved files found' });
+        // Check if any files were found
+        if (!files.length) {
+            return res.status(404).json({ message: "No files with incomplete renegotiation found" });
         }
 
-        return res.status(200).json({ message: 'renegotiation completed files retrieved successfully', data: approvedFiles });
+        // Return the list of files
+        return res.status(200).json({
+            message: "Files with incomplete renegotiation retrieved successfully",
+            data: files,
+        });
     } catch (error) {
-        console.error('Error fetching approved files:', error);
-        return res.status(500).json({ message: 'Error fetching approved files', error });
+        // Handle errors
+        console.error("Error fetching files with incomplete renegotiation:", error);
+        return res.status(500).json({
+            message: "Error fetching files with incomplete renegotiation",
+            error: error.message,
+        });
     }
 };
 
