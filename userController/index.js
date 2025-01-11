@@ -144,7 +144,15 @@ module.exports = {
                 return res.status(404).json({ message: 'File not found' });
             }
 
-            if (file.CurrDept === 'Finance' && file.renegotiation === 'Incomplete') {
+            if (
+                file.CurrDept === 'Finance' &&
+                file.renegotiation === 'Incomplete' &&
+                file.specialApproval !== 'Yes'
+            ) {
+                return res.status(400).json({
+                    message: 'Renegotiation is incomplete. The file cannot proceed from Finance.',
+                });
+            }) {
                 return res.status(400).json({ message: 'Renegotiation is incomplete. The file cannot proceed from Finance.' });
             }
     
