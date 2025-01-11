@@ -610,6 +610,103 @@ module.exports = {
         }
     
     },
+    updateSpecialApproval: async (req, res) => {
+        try {
+            const { uniqueId } = req.body;
+    
+          
+            if (!uniqueId) {
+                return res.status(400).json({ message: 'uniqueId is required' });
+            }
+    
+           
+            const file = await FileTrackModel.findOne({ uniqueId });
+    
+            if (!file) {
+                return res.status(404).json({ message: 'File not found' });
+            }
+    
+           
+            if (file.CurrDept !== 'President') {
+                return res.status(400).json({
+                    message: 'Special approval can only be updated in the President department.',
+                });
+
+            
+            }
+            if (file.specialApproval !== 'Yes') {
+                return res.status(400).json({
+                    message: 'File not eligible for special approval',
+                });
+            }
+            
+            file.specialApprovalStatus = 'Done';
+    
+            
+            const newTransition = {
+                FromDept: file.CurrDept,
+                ToDept: 'Finance',
+                date: new Date(),
+                status: 'special approval complete',
+                comment: 'Special approval completed by President and sent to Finance',
+            };
+    
+            file.transitions.push(newTransition);
+    
+           
+            file.CurrDept = 'Finance';
+    
+            
+            const updatedFile = await file.save();
+    
+            return res.status(200).json({
+                message: 'Special approval updated to Done and file sent to Finance',
+                data: updatedFile,
+            });
+        } catch (error) {
+            console.error('Error updating special approval:', error);
+            return res.status(500).json({
+                message: 'Error updating special approval',
+                error: error.message,
+            });
+        }
+    },
+    markSpecialApprovalRequired: async (req, res) => {
+        try {
+            const { uniqueId } = req.body;
+    
+            
+            if (!uniqueId) {
+                return res.status(400).json({ message: 'uniqueId is required' });
+            }
+    
+            
+            const file = await FileTrackModel.findOne({ uniqueId });
+    
+            if (!file) {
+                return res.status(404).json({ message: 'File not found' });
+            }
+    
+            // Update specialApproval to 'Yes'
+            file.specialApproval = 'Yes';
+    
+            // Save the changes
+            const updatedFile = await file.save();
+    
+            return res.status(200).json({
+                message: 'Special approval requirement updated to Yes',
+                data: updatedFile,
+            });
+        } catch (error) {
+            console.error('Error marking special approval as required:', error);
+            return res.status(500).json({
+                message: 'Error marking special approval as required',
+                error: error.message,
+            });
+        }
+    },
+         
+    
   
 
 }

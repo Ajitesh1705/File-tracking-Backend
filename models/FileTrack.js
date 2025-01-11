@@ -39,7 +39,7 @@ const transitionSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['saved', 'sent', 'received', 'rework','renegotiation', 'renegotiation complete'],
+        enum: ['saved', 'sent', 'received', 'rework','renegotiation', 'renegotiation complete','special approval complete'],
         default: 'sent'
     },
     comment:{
@@ -79,6 +79,16 @@ const fileTransferSchema = new Schema({
     renegotiation: { type: String, 
         enum: ['Incomplete', 'Complete'],
         default: 'Incomplete' },
+    specialApproval: {
+            type: String,
+            enum: ['Yes', 'No'],
+            default: 'No'
+        },
+    specialApprovalStatus: {
+            type: String,
+            enum: ['Done', 'Not Done'],
+            default: 'Not Done'
+        },
     comments: [commentSchema], 
     transitions: [transitionSchema],
     approved: {
