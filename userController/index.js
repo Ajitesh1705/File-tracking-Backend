@@ -145,17 +145,21 @@ module.exports = {
             }
 
             if (file.CurrDept === 'Finance' && file.renegotiation === 'Incomplete'&& file.specialApproval !== 'Yes') {
-                return res.status(400).json({ message: 'Renegotiation is incomplete. The file cannot proceed from Finance.' });
+                return res.status(400).json({ message: 'negotiation is incomplete. The file cannot proceed from Finance.' });
+            }
+
+            if (file.specialApprovalStatus == 'Done'&&file.CurrDept === 'Finance' && file.renegotiation === 'Incomplete') {
+                return res.status(400).json({ message: 'Negotiation in incomplete.' });
             }
     
             const departmentSequence = ['Directorate', 'Purchase', 'Finance', 'Registrar', 'Propresident', 'President'];
             const currentDeptIndex = departmentSequence.indexOf(file.CurrDept);
     
-            if (currentDeptIndex === -1 || (file.cost < 100000 && currentDeptIndex === 3)) {
+            if (currentDeptIndex === -1 || (file.cost < 100000 && currentDeptIndex === 3&& file.specialApproval!== 'Yes')) {
                 return res.status(400).json({ message: 'Invalid department or file cannot proceed further' });
             }
     
-            const nextDept = (file.cost <= 100000 && currentDeptIndex === 2)
+            const nextDept = (file.cost <= 100000 && currentDeptIndex === 2 )
                 ? 'Registrar'
                 : departmentSequence[currentDeptIndex + 1];
     
